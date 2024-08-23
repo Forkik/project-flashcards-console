@@ -1,19 +1,32 @@
 const fs = require("fs");
 const path = require("path");
+const { EOL } = require("os");
 
-class ReadFile {
-  static readDir() {
-    const pathDir = path.join(__dirname, "/topics/");
-    const arrDir = fs.readdirSync(pathDir);
-    let arrFile = [];
+const readFile = (fileName) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(
+      path.join(__dirname, "topics", fileName),
+      "utf8",
+      (err, data) => {
+        if (err) return reject(err);
+        try {
+          const lines = data
+            .trim()
+            .split(`${EOL}`)
+            .filter((el) => el !== "");
+          const questions = [];
+          for (let i = 0; i < lines.length; i += 2) {
+            const question = lines[i];
+            const answer = lines[i + 1];
+            questions.push({ question, answer });
+          }
+          resolve(questions);
+        } catch (parseErr) {
+          reject(parseErr);
+        }
+      }
+    );
+  });
+};
 
-    for (let i of arrDir) {
-      let arr = fs.readFileSync(pathDir + i, "utf-8").split("\r\n\r\n");
-      let newArr = arr.map((el) => el.split("\r\n"));
-      arrFile.push(newArr);
-    }
-    return arrFile;
-  }
-}
-
-module.exports = ReadFile;
+module.exports = readFile;
